@@ -16,7 +16,7 @@ async function pending(): Promise<PendingAuthorization> {
     issuer: 'https://auth.example.test',
     redirectUri: `http://127.0.0.1:${port}/callback`,
     createdAt: Date.now(),
-    url: '',
+    url: 'https://agent.example.test/oauth/authorize?client_id=test&code_challenge=private-challenge',
     requiresIssuer: false,
   };
 }
@@ -80,4 +80,101 @@ test('invalid callback does not settle login or expose untrusted text', async ()
 test('expired refresh credential uses login exit code instead of argument exit code', () => {
   assert.equal(exitCode(new CcdbError('invalid_grant', 'expired', 400)), 3);
   assert.equal(exitCode(new CcdbError('INVALID_ARGUMENT', 'invalid', 400)), 2);
+});
+
+test('completion redirects to Agent only after exchange and persistence finish', async () => {
+  const request = await pending();
+  let release!: () => void;
+  let started!: () => void;
+  const startedPromise = new Promise<void>((resolve) => {
+    started = resolve;
+  });
+  const savePromise = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  let calls = 0;
+  const listener = await listenForCallback(request, undefined, async (callback) => {
+    calls++;
+    assert.equal(callback.searchParams.get('code'), 'private-code');
+    started();
+    await savePromise;
+  });
+  try {
+    let received = false;
+    const responsePromise = fetch(
+      `${request.redirectUri}?state=${request.state}&code=private-code&return_to=https://evil.test`,
+      { redirect: 'manual' },
+    ).then((response) => {
+      received = true;
+      return response;
+    });
+    await startedPromise;
+    assert.equal(received, false);
+    const duplicate = await fetch(
+      `${request.redirectUri}?state=${request.state}&code=private-code`,
+    );
+    assert.equal(duplicate.status, 400);
+    release();
+    await listener.result;
+    await listener.close();
+    const response = await responsePromise;
+    assert.equal(calls, 1);
+    assert.equal(response.status, 303);
+    assert.equal(
+      response.headers.get('location'),
+      'https://agent.example.test/oauth/authorize#ccdb_result=success&state=test-state',
+    );
+    assert.equal(response.headers.get('cache-control'), 'no-store');
+    assert.equal(response.headers.get('referrer-policy'), 'no-referrer');
+    assert.equal(await response.text(), '');
+  } finally {
+    release();
+    await listener.close();
+  }
+});
+
+test('failed token exchange or persistence never redirects to success', async () => {
+  for (const code of ['invalid_grant', 'CREDENTIAL_STORE_UNAVAILABLE']) {
+    const request = await pending();
+    const listener = await listenForCallback(request, undefined, async () => {
+      throw new CcdbError(code, 'private-token-in-error');
+    });
+    try {
+      const rejection = assert.rejects(listener.result, { code });
+      const response = await fetch(
+        `${request.redirectUri}?state=${request.state}&code=private-code`,
+        { redirect: 'manual' },
+      );
+      await rejection;
+      assert.equal(response.status, 303);
+      assert.match(response.headers.get('location')!, /#ccdb_result=error&state=test-state$/);
+      assert.doesNotMatch(response.headers.get('location')!, /private/);
+      assert.equal(await response.text(), '');
+    } finally {
+      await listener.close();
+    }
+  }
+});
+
+test('cancelled or invalid callbacks never execute token exchange', async () => {
+  const request = await pending();
+  let calls = 0;
+  const listener = await listenForCallback(request, undefined, async () => {
+    calls++;
+  });
+  try {
+    const invalid = await fetch(`${request.redirectUri}?state=wrong&code=secret`);
+    assert.equal(invalid.status, 400);
+    const rejection = assert.rejects(listener.result, { code: 'access_denied' });
+    const response = await fetch(
+      `${request.redirectUri}?state=${request.state}&error=access_denied`,
+      { redirect: 'manual' },
+    );
+    await rejection;
+    assert.equal(response.status, 303);
+    assert.match(response.headers.get('location')!, /#ccdb_result=cancelled/);
+    assert.equal(calls, 0);
+  } finally {
+    await listener.close();
+  }
 });

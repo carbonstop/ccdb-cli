@@ -1,5 +1,11 @@
 # 开发指南
 
+## PKCE 授权结果页
+
+已同步 ccdb-integrations 提交 `2fb30a5`：本地 PKCE 回调在完成授权码换取和凭证保存后，返回 Carbon Agent 授权页面，并通过 URL fragment 携带 success、error 或 cancelled 结果。返回地址取自已校验的授权页，不接受回调参数指定跳转目标，不携带 code、Token 或 verifier。Agent 前端需要配套支持结果展示并停止再次自动跳转；默认 device 登录和 API Key 不变。
+
+对应回归测试位于 `tests/callback.test.ts`。此修复仅涉及本地登录，不代表远程 MCP 架构已实现或完成联调。
+
 在仓库根目录运行：
 
 ```sh
