@@ -6,7 +6,7 @@ npm 包为 `ccdb-cli`，命令为 `ccdb-cli`。独立二进制无需 Node.js；�
 
 ## 安装与使用
 
-直接从 npm 安装，无需克隆源码或准备 tgz：
+从 npm 安装：
 
 ```sh
 npm install -g ccdb-cli
@@ -28,7 +28,7 @@ API Key 是用户主动选择的备选：由宿主 Secret 设置 `CCDB_API_KEY`�
 
 默认推荐顺序不改变显式配置：环境 `CCDB_API_KEY` 存在时仍优先于已保存凭证；恢复 OAuth 前应从实际执行环境中移除该变量并登录。没有环境 Key 时使用已保存凭证。OAuth 无法刷新时提示重新登录，不自动切换 Key；Key 失败也不自动切换 OAuth。PKCE 是通过 `--method pkce` 显式选择的另一种 OAuth 登录方式。
 
-环境默认 production；本地需指定 `CCDB_PROFILE=local`，默认网关 8880、Agent 3100。OAuth client_id 默认 ccdb-connect-local，须在目标环境登记；联调可显式设置 CCDB_CLIENT_ID。可覆盖 CCDB_API_BASE、CCDB_AGENT_WEB、CCDB_OAUTH_ISSUER、CCDB_RESOURCE。
+默认环境为 `production`。环境与 OAuth 客户端配置见 [配置说明](https://github.com/carbonstop/ccdb-cli/blob/main/docs/CONFIGURATION.md)。
 
 Windows 自动凭证存储使用 DPAPI；macOS/Linux 依赖本机 Keychain/Secret Service。无系统密钥服务时可显式选择 CCDB_AUTH_STORE=file（非加密文件），需自行限制本机访问。
 
