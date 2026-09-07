@@ -40,6 +40,10 @@ test('npm tgz packages install offline into fresh directories without shared wor
       directory,
     );
     assert.equal(install.code, 0, install.err);
+    const metadata = JSON.parse(
+      await readFile(join(directory, 'node_modules/@carbonstop/ccdb-cli/package.json'), 'utf8'),
+    );
+    assert.deepEqual(metadata.bin, { 'ccdb-cli': 'dist/main.mjs' });
     const installed = join(directory, `node_modules/@carbonstop/ccdb-${name}/dist/main.mjs`);
     const result = await run(process.execPath, [installed, '--version'], directory);
     assert.equal(result.code, 0, result.err);
