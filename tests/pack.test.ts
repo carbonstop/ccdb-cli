@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, writeFile, mkdir } from 'node:fs/promises';
+import { mkdtemp, readFile, writeFile, mkdir, access } from 'node:fs/promises';
 import { dirname, join, resolve, relative, isAbsolute } from 'node:path';
 import { tmpdir } from 'node:os';
 import { spawn } from 'node:child_process';
@@ -20,6 +20,19 @@ function run(command: string, args: string[], cwd: string, env: NodeJS.ProcessEn
     p.on('exit', (code) => yes({ code, out, err }));
   });
 }
+test('shared client is pinned to npm without a vendored workspace', async () => {
+  const root = JSON.parse(await readFile('package.json', 'utf8'));
+  const lock = JSON.parse(await readFile('package-lock.json', 'utf8'));
+  const client = lock.packages['node_modules/ccdb-client'];
+  assert.match(root.dependencies['ccdb-client'], /^\d+\.\d+\.\d+$/);
+  assert.equal(client.version, root.dependencies['ccdb-client']);
+  assert.match(client.resolved, /^https:\/\/registry\.npmjs\.org\/ccdb-client\/-\//);
+  assert.ok(client.integrity);
+  assert.equal(client.link, undefined);
+  assert.equal(lock.packages['packages/ccdb-client'], undefined);
+  await assert.rejects(access('packages/ccdb-client/package.json'), { code: 'ENOENT' });
+});
+
 test('npm tgz packages install offline into fresh directories without shared workspace', async () => {
   assert.ok(process.env.npm_execpath, 'Run using npm test');
   for (const name of ['cli']) {
@@ -40,6 +53,12 @@ test('npm tgz packages install offline into fresh directories without shared wor
       directory,
     );
     assert.equal(install.code, 0, install.err);
+    await assert.rejects(access(join(directory, 'node_modules/ccdb-client')), { code: 'ENOENT' });
+    const notices = await readFile(
+      join(directory, 'node_modules/ccdb-cli/dist/THIRD_PARTY_NOTICES.txt'),
+      'utf8',
+    );
+    assert.match(notices, /=== node_modules\/ccdb-client \d+\.\d+\.\d+ ===\s+MIT License/);
     const metadata = JSON.parse(
       await readFile(join(directory, 'node_modules/ccdb-cli/package.json'), 'utf8'),
     );

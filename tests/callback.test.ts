@@ -1,9 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:net';
-import { listenForCallback } from '../packages/ccdb-client/src/auth/interactive.js';
-import { CcdbError, exitCode } from '../packages/ccdb-client/src/errors.js';
-import type { PendingAuthorization } from '../packages/ccdb-client/src/auth/oauth.js';
+import { listenForCallback } from 'ccdb-client/auth/interactive';
+import { CcdbError, exitCode } from 'ccdb-client/errors';
+import type { PendingAuthorization } from 'ccdb-client/auth/oauth';
 
 async function pending(): Promise<PendingAuthorization> {
   const server = createServer();

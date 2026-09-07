@@ -7,9 +7,9 @@ import {
   searchSchema,
   config,
   retryAfter,
-} from '../packages/ccdb-client/src/index.js';
+} from 'ccdb-client';
 import { fixture, MemoryStore, factorId, detailResult, searchResult } from './helpers.js';
-import { jsonRequest } from '../packages/ccdb-client/src/http.js';
+import { jsonRequest } from 'ccdb-client/http';
 
 test('HTTP error mapping redacts echoed headers and form credentials while preserving diagnostics', async () => {
   const secrets = [

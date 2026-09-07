@@ -4,12 +4,7 @@ import { mkdtemp, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
-import {
-  OAuthClient,
-  FileCredentialStore,
-  CcdbClient,
-  verifyCallback,
-} from '../packages/ccdb-client/src/index.js';
+import { OAuthClient, FileCredentialStore, CcdbClient, verifyCallback } from 'ccdb-client';
 import { fixture, MemoryStore } from './helpers.js';
 test('parallel refresh is serialized; fresh token reused across callers', async () => {
   const f = await fixture();

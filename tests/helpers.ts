@@ -1,9 +1,5 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
-import {
-  config,
-  type Credentials,
-  type CredentialStore,
-} from '../packages/ccdb-client/src/index.js';
+import { config, type Credentials, type CredentialStore } from 'ccdb-client';
 export class MemoryStore implements CredentialStore {
   value?: Credentials;
   writes = 0;

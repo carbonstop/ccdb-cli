@@ -1,13 +1,6 @@
 import { parseArgs } from 'node:util';
-import {
-  CcdbClient,
-  config,
-  CcdbError,
-  asError,
-  exitCode,
-  type Config,
-} from '../../ccdb-client/src/index.js';
-import { interactiveLogin } from '../../ccdb-client/src/auth/interactive.js';
+import { CcdbClient, config, CcdbError, asError, exitCode, type Config } from 'ccdb-client';
+import { interactiveLogin } from 'ccdb-client/auth/interactive';
 import { humanOutput } from './output.js';
 
 const HELP = `ccdb-cli 0.1.0 — CCDB 因子查询工具
