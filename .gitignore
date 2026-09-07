@@ -1,0 +1,15 @@
+node_modules/
+dist/
+packages/*/dist/
+artifacts/
+.credentials/
+**/.credentials/
+.env
+.env.*
+!.env.example
+*.log
+*.tgz
+*.zip
+coverage/
+skills/*/scripts/ccdb.mjs
+skills/*/scripts/THIRD_PARTY_NOTICES.txt
