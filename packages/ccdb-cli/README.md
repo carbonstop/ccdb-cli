@@ -1,15 +1,17 @@
-# CCDB Connect CLI
+# CCDB CLI
+
+npm 包为 `ccdb-cli`，命令为 `ccdb-cli`。独立二进制无需 Node.js；从官方仓库获取对应系统/架构版本。
 
 独立的 CCDB 因子查询命令行，Node.js 22+。内含接口与认证代码，不需要安装 MCP 或 ccdb-client。
 
 开发包通过本地 tgz 安装；尚未发布到 npm。
 
 ```sh
-ccdb-connect auth login --method device
-ccdb-connect factor search "电力" --country "中国" --limit 5 --json
-ccdb-connect factor detail "2232515359983616" --json
-ccdb-connect doctor --json
-ccdb-connect --help
+ccdb-cli auth login --method device
+ccdb-cli factor search "电力" --country "中国" --limit 5 --json
+ccdb-cli factor detail "2232515359983616" --json
+ccdb-cli doctor --json
+ccdb-cli --help
 ```
 
 API Key 由宿主设置 `CCDB_API_KEY`，或使用 `auth login --method api-key` 不回显输入。不要在命令参数、聊天或日志中粘贴完整 Key。

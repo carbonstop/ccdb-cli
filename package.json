@@ -11,6 +11,8 @@
   },
   "scripts": {
     "build": "node scripts/build.mjs",
+    "build:native": "npm run build && node scripts/build-native.mjs",
+    "test:native": "node scripts/test-native.mjs",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/*.test.ts",
     "pack:local": "node scripts/pack.mjs",
@@ -27,6 +29,7 @@
     "@types/node": "^22.0.0",
     "@types/proper-lockfile": "^4.1.4",
     "esbuild": "^0.27.0",
+    "postject": "1.0.0-alpha.6",
     "prettier": "2.8.8",
     "tsx": "^4.21.0",
     "typescript": "^5.9.0"

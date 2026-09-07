@@ -1,15 +1,17 @@
-# CCDB Connect CLI
+# CCDB CLI
+
+命令：`ccdb-cli`；npm 包：`ccdb-cli`。另提供无需 Node.js 的独立二进制，构建、下载与发布见 [分发说明](docs/DISTRIBUTION.md)。
 
 独立的 CCDB 因子查询命令行，Node.js 22+。内含接口与认证代码，不需要安装 MCP 或 ccdb-client。
 
 开发包通过本地 tgz 安装；尚未发布到 npm。
 
 ```sh
-ccdb-connect auth login --method device
-ccdb-connect factor search "电力" --country "中国" --limit 5 --json
-ccdb-connect factor detail "2232515359983616" --json
-ccdb-connect doctor --json
-ccdb-connect --help
+ccdb-cli auth login --method device
+ccdb-cli factor search "电力" --country "中国" --limit 5 --json
+ccdb-cli factor detail "2232515359983616" --json
+ccdb-cli doctor --json
+ccdb-cli --help
 ```
 
 API Key 由宿主设置 `CCDB_API_KEY`，或使用 `auth login --method api-key` 不回显输入。不要在命令参数、聊天或日志中粘贴完整 Key。
@@ -36,12 +38,12 @@ Node.js 22+. Build and pack are local; no npm publication is performed.
 在此目录用本地包安装（不会访问 npm 获取本包）：
 
 ```powershell
-npm install -g ./dist/releases/carbonstop-ccdb-cli-0.1.0.tgz
-ccdb-connect --help
-ccdb-connect doctor --profile local --json
-ccdb-connect auth login --profile local
-ccdb-connect factor search 电力 --profile local --country 中国 --year 2024 --limit 5 --json
-ccdb-connect factor detail 1234567890123456789 --profile local --json
+npm install -g ./dist/releases/ccdb-cli-0.1.0.tgz
+ccdb-cli --help
+ccdb-cli doctor --profile local --json
+ccdb-cli auth login --profile local
+ccdb-cli factor search 电力 --profile local --country 中国 --year 2024 --limit 5 --json
+ccdb-cli factor detail 1234567890123456789 --profile local --json
 ```
 
 最后的 factorId 仅为格式示例，必须替换为搜索响应中的真实字符串 ID。筛选项 `--country`、`--year`、`--source-level` 可以重复传入。
@@ -53,8 +55,8 @@ ccdb-connect factor detail 1234567890123456789 --profile local --json
 API Key 可替代 OAuth：
 
 ```powershell
-ccdb-connect auth login --profile local --method api-key
-ccdb-connect auth status --profile local --json
+ccdb-cli auth login --profile local --method api-key
+ccdb-cli auth status --profile local --json
 ```
 
 登录命令隐藏输入，也可从受控进程 stdin 提供完整 Key；不接受 `--api-key 明文`。`CCDB_API_KEY` 环境变量优先于已保存凭证，支持现有新旧格式，但必须是有 CCDB 权限的 Key。密钥格式不等于权限范围，旧碳云业务 Key 不会自动升级。

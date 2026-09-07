@@ -5,15 +5,18 @@ import { mkdtemp, copyFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fixture, factorId, detailResult } from './helpers.js';
-function run(file: string, args: string[], env: NodeJS.ProcessEnv) {
+const native = process.env.CCDB_TEST_BINARY;
+const artifact = native || resolve('packages/ccdb-cli/dist/main.mjs');
+function run(file: string, args: string[], env: NodeJS.ProcessEnv, input?: string) {
   return new Promise<{ code: number | null; out: string; err: string }>((yes, no) => {
-    const p = spawn(process.execPath, [file, ...args], {
-      env,
-      stdio: ['ignore', 'pipe', 'pipe'],
+    const p = spawn(native ? file : process.execPath, native ? args : [file, ...args], {
+      env: native ? { ...env, PATH: '' } : env,
+      stdio: ['pipe', 'pipe', 'pipe'],
       windowsHide: true,
     });
     let out = '',
       err = '';
+    p.stdin.end(input);
     p.stdout.on('data', (c) => (out += c));
     p.stderr.on('data', (c) => (err += c));
     p.on('error', no);
@@ -23,8 +26,8 @@ function run(file: string, args: string[], env: NodeJS.ProcessEnv) {
 test('standalone CLI bundle runs without node_modules and maps full CLI arguments', async () => {
   const f = await fixture();
   const dir = await mkdtemp(join(tmpdir(), 'ccdb-cli-isolated-'));
-  const script = join(dir, 'ccdb.mjs');
-  await copyFile(resolve('packages/ccdb-cli/dist/main.mjs'), script);
+  const script = join(dir, native ? 'ccdb-cli.exe' : 'ccdb.mjs');
+  await copyFile(artifact, script);
   try {
     const env = {
       ...process.env,
@@ -79,6 +82,39 @@ test('standalone CLI bundle runs without node_modules and maps full CLI argument
     await f.close();
   }
 });
+test('CLI saves an API Key through stdin, uses the file store and logs out', async () => {
+  const f = await fixture();
+  const directory = await mkdtemp(join(tmpdir(), 'ccdb-cli-auth-'));
+  const secret = 'fixture-native-api-key';
+  const env = {
+    ...process.env,
+    CCDB_PROFILE: 'local',
+    CCDB_API_BASE: f.base,
+    CCDB_AGENT_WEB: f.base,
+    CCDB_CONFIG_DIR: directory,
+    CCDB_AUTH_STORE: 'file',
+    CCDB_API_KEY: '',
+  };
+  try {
+    const login = await run(
+      artifact,
+      ['auth', 'login', '--method', 'api-key', '--json'],
+      env,
+      secret + '\n',
+    );
+    assert.equal(login.code, 0, login.err);
+    assert.ok(!(login.out + login.err).includes(secret));
+    const query = await run(artifact, ['factor', 'search', '电力', '--json'], env);
+    assert.equal(query.code, 0, query.err);
+    assert.equal(JSON.parse(query.out).items[0].factorId, factorId);
+    const logout = await run(artifact, ['auth', 'logout', '--json'], env);
+    assert.equal(logout.code, 0, logout.err);
+    const after = await run(artifact, ['factor', 'search', '电力', '--json'], env);
+    assert.equal(after.code, 3, after.out + after.err);
+  } finally {
+    await f.close();
+  }
+});
 test('CLI doctor performs discovery only; status never prints environment Key', async () => {
   const f = await fixture();
   try {
@@ -89,7 +125,7 @@ test('CLI doctor performs discovery only; status never prints environment Key', 
       CCDB_AGENT_WEB: f.base,
       CCDB_API_KEY: 'sk-cs-fixture-private',
     };
-    const script = resolve('packages/ccdb-cli/dist/main.mjs');
+    const script = artifact;
     const result = await run(script, ['doctor', '--json'], env);
     assert.equal(result.code, 0, result.err);
     assert.equal(JSON.parse(result.out).factorQuotaConsumed, false);

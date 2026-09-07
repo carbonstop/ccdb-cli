@@ -1,0 +1,36 @@
+name: Native CLI
+on: [push, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            target: linux-x64
+          - os: ubuntu-24.04-arm
+            target: linux-arm64
+          - os: macos-15
+            target: darwin-arm64
+          - os: macos-15-intel
+            target: darwin-x64
+          - os: windows-2022
+            target: win32-x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.19.0
+          cache: npm
+      - run: npm ci
+      - run: npm run verify
+      - run: npm run build:native
+      - run: npm run test:native
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ccdb-cli-${{ matrix.target }}
+          path: dist/native/${{ matrix.target }}/
+          if-no-files-found: error
