@@ -98,6 +98,7 @@ function callbackPage(
 export async function listenForCallback(
   pending: PendingAuthorization,
   signal?: AbortSignal,
+  complete?: (callback: URL) => Promise<void>,
 ): Promise<CallbackListener> {
   signal?.throwIfAborted();
   const target = new URL(pending.redirectUri);
@@ -110,6 +111,18 @@ export async function listenForCallback(
       'INVALID_CONFIG',
       '本地 PKCE 回调需使用已登记的 loopback HTTP 地址和固定端口',
     );
+  // Use the already-discovered authorization page, never a redirect supplied by the callback.
+  const resultPage = complete ? validUrl(pending.url) : undefined;
+  const finish = (res: ServerResponse, outcome: string, done: () => void) => {
+    const destination = new URL(resultPage!);
+    destination.search = '';
+    destination.hash = new URLSearchParams({
+      ccdb_result: outcome,
+      state: pending.state,
+    }).toString();
+    res.writeHead(303, { Location: destination.toString() });
+    res.end(done);
+  };
   let resolve!: (url: URL) => void,
     reject!: (error: unknown) => void,
     settled = false;
@@ -132,6 +145,10 @@ export async function listenForCallback(
     } catch (error) {
       if (error instanceof CcdbError && error.code === 'access_denied') {
         settled = true;
+        if (complete) {
+          finish(res, 'cancelled', () => reject(error));
+          return;
+        }
         callbackPage(res, 200, '已取消授权', '本次请求未获得访问权限。', () => reject(error));
         return;
       }
@@ -139,6 +156,16 @@ export async function listenForCallback(
       return;
     }
     settled = true;
+    if (complete) {
+      // Do not report success until token exchange AND credential persistence finish.
+      void Promise.resolve()
+        .then(() => complete(url))
+        .then(
+          () => finish(res, 'success', () => resolve(url)),
+          (error) => finish(res, 'error', () => reject(error)),
+        );
+      return;
+    }
     // 先完成响应写出再交换令牌；此时尚不能宣称登录已成功。
     callbackPage(res, 200, '已收到授权回调', '正在完成登录，请在终端查看最终结果。', () =>
       resolve(url),
@@ -210,12 +237,14 @@ export async function interactiveLogin(
     await auth.pollDevice(device, signal);
   } else if (method === 'pkce') {
     const pending = await auth.createAuthorization(signal);
-    const listener = await listenForCallback(pending, signal);
+    const listener = await listenForCallback(pending, signal, async (callback) => {
+      await auth.exchangeCallback(callback, pending, signal);
+    });
     try {
       notify({ event: 'authorization_pending', authorizationUri: pending.url });
       if (!noBrowser && !(await openBrowser(pending.url)))
         notify({ event: 'browser_unavailable', message: '请手动打开上面的授权链接' });
-      await auth.exchangeCallback(await listener.result, pending, signal);
+      await listener.result;
     } finally {
       await listener.close();
     }
