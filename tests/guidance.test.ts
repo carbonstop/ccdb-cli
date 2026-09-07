@@ -1,10 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { humanOutput } from '../packages/ccdb-cli/src/output.js';
-import {
-  searchResponseSchema,
-  detailResponseSchema,
-} from '../packages/ccdb-client/src/contracts.js';
+import { searchResponseSchema, detailResponseSchema } from 'ccdb-client/contracts';
 import { searchResult, detailResult } from './helpers.js';
 
 const guidance = {

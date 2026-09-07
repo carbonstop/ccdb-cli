@@ -38,4 +38,6 @@ for (const directory of ['packages/ccdb-cli/dist']) {
   await mkdir(resolve(root, directory), { recursive: true });
   await writeFile(resolve(root, directory, 'THIRD_PARTY_NOTICES.txt'), notices);
 }
-console.log('Built independent CLI bundle. No external ccdb-client dependency.');
+console.log(
+  'Built independent CLI bundle. Includes the pinned ccdb-client npm dependency; no separate runtime install.',
+);
