@@ -2,17 +2,23 @@
 
 npm 包为 `ccdb-cli`，命令为 `ccdb-cli`。独立二进制无需 Node.js；从官方仓库获取对应系统/架构版本。
 
-独立的 CCDB 因子查询命令行，Node.js 22+。内含接口与认证代码，不需要安装 MCP 或 ccdb-client。
+独立的 CCDB 因子查询命令行。npm 版需要 Node.js 22+；独立二进制无需 Node.js。内含接口与认证代码，不需要安装 MCP 或 ccdb-client。
 
-开发包通过本地 tgz 安装；尚未发布到 npm。
+## 安装与使用
+
+直接从 npm 安装，无需克隆源码或准备 tgz：
 
 ```sh
+npm install -g ccdb-cli
+ccdb-cli --version
 ccdb-cli auth login --method device
 ccdb-cli factor search "电力" --country "中国" --limit 5 --json
 ccdb-cli factor detail "2232515359983616" --json
 ccdb-cli doctor --json
 ccdb-cli --help
 ```
+
+固定版本：`npm install -g ccdb-cli@0.1.0`。镜像未同步时追加 `--registry=https://registry.npmjs.org/`。数据库访问仍需有效授权和可用后端。
 
 API Key 由宿主设置 `CCDB_API_KEY`，或使用 `auth login --method api-key` 不回显输入。不要在命令参数、聊天或日志中粘贴完整 Key。
 

@@ -6,7 +6,7 @@
 
 ## Two distributions
 
-The npm package bundles JavaScript and needs Node.js 22+. It does not download a native executable at installation time. After publication: `npm install -g ccdb-cli@0.1.0`.
+The published npm package bundles JavaScript and needs Node.js 22+. Install with `npm install -g ccdb-cli` (or pin `ccdb-cli@0.1.0`). No source checkout or local tgz is needed. It does not download a native executable at installation time.
 
 Native builds embed Node.js using SEA, so the end user does not need Node.js or npm. Build on the target OS/architecture using Node.js 24.19.0:
 
