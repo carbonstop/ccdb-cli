@@ -2,17 +2,23 @@
 
 命令：`ccdb-cli`；npm 包：`ccdb-cli`。另提供无需 Node.js 的独立二进制，构建、下载与发布见 [分发说明](docs/DISTRIBUTION.md)。
 
-独立的 CCDB 因子查询命令行，Node.js 22+。内含接口与认证代码，不需要安装 MCP 或 ccdb-client。
+独立的 CCDB 因子查询命令行。npm 版需要 Node.js 22+；独立二进制无需 Node.js。内含接口与认证代码，不需要安装 MCP 或 ccdb-client。
 
-开发包通过本地 tgz 安装；尚未发布到 npm。
+## 从 npm 安装（推荐）
+
+已发布 [ccdb-cli](https://www.npmjs.com/package/ccdb-cli)，无需克隆仓库或先构建：
 
 ```sh
+npm install -g ccdb-cli
+ccdb-cli --version
 ccdb-cli auth login --method device
 ccdb-cli factor search "电力" --country "中国" --limit 5 --json
 ccdb-cli factor detail "2232515359983616" --json
 ccdb-cli doctor --json
 ccdb-cli --help
 ```
+
+需要固定版本时使用 `npm install -g ccdb-cli@0.1.0`。若国内镜像尚未同步，可追加 `--registry=https://registry.npmjs.org/`。安装成功不等于取得数据库权限，查询仍需服务端可用并完成授权。
 
 API Key 由宿主设置 `CCDB_API_KEY`，或使用 `auth login --method api-key` 不回显输入。不要在命令参数、聊天或日志中粘贴完整 Key。
 
@@ -24,21 +30,23 @@ Windows 自动凭证存储使用 DPAPI；macOS/Linux 依赖本机 Keychain/Secre
 
 数值受限 `******` 不可计算。候选不是最终推荐，须结合详情、单位、范围判断。
 
-## Development
+## 从源码开发（仅开发人员）
+
+以下命令在克隆的仓库根目录运行，不是普通用户的安装前置步骤：
 
 ```sh
 npm ci
 npm run verify
+npm install -g ./dist/releases/ccdb-cli-0.1.0.tgz
 ```
 
-Node.js 22+. Build and pack are local; no npm publication is performed.
+`verify` 会构建并生成本地 tgz；最后一行仅用于测试刚构建的本地版本。构建不会自动发布 npm。
 
-## 只安装 CLI
+## 本地后端联调（仅开发人员）
 
-在此目录用本地包安装（不会访问 npm 获取本包）：
+已安装 CLI 且本地后端已启动时，可显式选择 local 环境；普通用户无需使用这些本地地址：
 
 ```powershell
-npm install -g ./dist/releases/ccdb-cli-0.1.0.tgz
 ccdb-cli --help
 ccdb-cli doctor --profile local --json
 ccdb-cli auth login --profile local
