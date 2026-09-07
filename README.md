@@ -20,7 +20,13 @@ ccdb-cli --help
 
 需要固定版本时使用 `npm install -g ccdb-cli@0.1.0`。若国内镜像尚未同步，可追加 `--registry=https://registry.npmjs.org/`。安装成功不等于取得数据库权限，查询仍需服务端可用并完成授权。
 
-API Key 由宿主设置 `CCDB_API_KEY`，或使用 `auth login --method api-key` 不回显输入。不要在命令参数、聊天或日志中粘贴完整 Key。
+### 认证选择：默认 device OAuth，API Key 为备选
+
+`ccdb-cli auth login` 默认使用 device OAuth，等价于 `ccdb-cli auth login --method device`。终端给出授权链接和设备码，由用户在浏览器登录并授权；无浏览器终端可加 `--no-browser`。查询本身不会自动启动登录。
+
+API Key 是用户主动选择的备选：由宿主 Secret 设置 `CCDB_API_KEY`，或使用 `ccdb-cli auth login --method api-key` 不回显输入。不要在命令参数、聊天或日志中粘贴完整 Key。
+
+默认推荐顺序不改变显式配置：环境 `CCDB_API_KEY` 存在时仍优先于已保存凭证；恢复 OAuth 前应从实际执行环境中移除该变量并登录。没有环境 Key 时使用已保存凭证。OAuth 无法刷新时提示重新登录，不自动切换 Key；Key 失败也不自动切换 OAuth。PKCE 是通过 `--method pkce` 显式选择的另一种 OAuth 登录方式。
 
 环境默认 production；本地需指定 `CCDB_PROFILE=local`，默认网关 8880、Agent 3100。OAuth client_id 默认 ccdb-connect-local，须在目标环境登记；联调可显式设置 CCDB_CLIENT_ID。可覆盖 CCDB_API_BASE、CCDB_AGENT_WEB、CCDB_OAUTH_ISSUER、CCDB_RESOURCE。
 
