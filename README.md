@@ -1,6 +1,6 @@
 # CCDB CLI
 
-命令：`ccdb-cli`；npm 包：`@carbonstop/ccdb-cli`。另提供无需 Node.js 的独立二进制，构建、下载与发布见 [分发说明](docs/DISTRIBUTION.md)。
+命令：`ccdb-cli`；npm 包：`ccdb-cli`。另提供无需 Node.js 的独立二进制，构建、下载与发布见 [分发说明](docs/DISTRIBUTION.md)。
 
 独立的 CCDB 因子查询命令行，Node.js 22+。内含接口与认证代码，不需要安装 MCP 或 ccdb-client。
 
@@ -38,7 +38,7 @@ Node.js 22+. Build and pack are local; no npm publication is performed.
 在此目录用本地包安装（不会访问 npm 获取本包）：
 
 ```powershell
-npm install -g ./dist/releases/carbonstop-ccdb-cli-0.1.0.tgz
+npm install -g ./dist/releases/ccdb-cli-0.1.0.tgz
 ccdb-cli --help
 ccdb-cli doctor --profile local --json
 ccdb-cli auth login --profile local

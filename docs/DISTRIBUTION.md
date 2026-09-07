@@ -1,12 +1,12 @@
 # CLI naming, native builds and npm
 
-- npm package: `@carbonstop/ccdb-cli`, version `0.1.0`.
+- npm package: `ccdb-cli`, version `0.1.0`.
 - Command and standalone executable: `ccdb-cli` (`ccdb-cli.exe` on Windows).
 - OAuth client ID `ccdb-connect-local`, keychain service and credential directory remain unchanged. Renaming the executable does not invalidate existing credentials.
 
 ## Two distributions
 
-The npm package bundles JavaScript and needs Node.js 22+. It does not download a native executable at installation time. After publication: `npm install -g @carbonstop/ccdb-cli@0.1.0`.
+The npm package bundles JavaScript and needs Node.js 22+. It does not download a native executable at installation time. After publication: `npm install -g ccdb-cli@0.1.0`.
 
 Native builds embed Node.js using SEA, so the end user does not need Node.js or npm. Build on the target OS/architecture using Node.js 24.19.0:
 
@@ -27,13 +27,13 @@ macOS builds are ad-hoc signed, not Developer ID signed/notarized; Windows build
 
 ## npm release
 
-Use the official registry, not a package mirror. Authenticate using `npm login --registry=https://registry.npmjs.org/`; the account needs publish permission in the `@carbonstop` scope. Never commit tokens.
+Use the official registry, not a package mirror. Authenticate using `npm login --registry=https://registry.npmjs.org/`; the account needs publish permission for `ccdb-cli`. The package is unscoped and does not depend on `@carbonstop` organization membership. Never commit tokens.
 
 After reviewing the package contents and confirming company/license approval:
 
 ```sh
 npm run verify
-npm publish ./dist/releases/carbonstop-ccdb-cli-0.1.0.tgz --access public --registry=https://registry.npmjs.org/
+npm publish ./dist/releases/ccdb-cli-0.1.0.tgz --access public --registry=https://registry.npmjs.org/
 ```
 
 Publishing is a separate explicit action: running build, tests or CI does not publish to npm. A 2FA prompt must be completed by the authorized maintainer. The source repository remains private unless separately approved for public visibility.

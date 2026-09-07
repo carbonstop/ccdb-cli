@@ -1,6 +1,6 @@
 # CCDB CLI
 
-npm 包为 `@carbonstop/ccdb-cli`，命令为 `ccdb-cli`。独立二进制无需 Node.js；从官方仓库获取对应系统/架构版本。
+npm 包为 `ccdb-cli`，命令为 `ccdb-cli`。独立二进制无需 Node.js；从官方仓库获取对应系统/架构版本。
 
 独立的 CCDB 因子查询命令行，Node.js 22+。内含接口与认证代码，不需要安装 MCP 或 ccdb-client。
 

@@ -1,5 +1,5 @@
 {
-  "name": "@carbonstop/ccdb-cli",
+  "name": "ccdb-cli",
   "version": "0.1.0",
   "type": "module",
   "description": "CCDB Connect: authenticated emission factor search and details",
