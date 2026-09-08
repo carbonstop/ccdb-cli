@@ -2,24 +2,9 @@ import { parseArgs } from 'node:util';
 import { CcdbClient, CcdbError, asError, exitCode, type Config } from 'ccdb-client';
 import { appConfig } from './config.js';
 import { interactiveLogin } from 'ccdb-client/auth/interactive';
-import { humanOutput } from './output.js';
+import { humanOutput, loginProgress } from './output.js';
+import { helpText } from './help.js';
 
-const HELP = `ccdb-cli 0.1.2 — CCDB 因子查询工具
-
-ccdb-cli auth login [--method device|pkce|api-key] [--no-browser]
-ccdb-cli auth status
-ccdb-cli auth logout [--revoke]
-ccdb-cli factor search <query> [--language zh|en] [--accounting-type product|enterprise]
-  [--country 中国] [--year 2025] [--source-level 国家排放因子] [--limit 5]
-ccdb-cli factor detail <factorId> [--language zh|en]
-ccdb-cli doctor
-
-公共选项：--profile local|test|pre|production|自定义  --json  --timeout <毫秒>
-筛选项可重复传入；factorId 必须原样使用字符串。
-API Key 使用 CCDB_API_KEY 环境变量或 api-key 登录的隐藏输入/stdin，不接受明文命令行参数。
-auth logout --revoke 会撤销整条应用授权，可能影响共用该授权的 MCP/CLI/Skill。
---json 成功/错误为 JSON；登录进度为不含 Token 的 JSON 行。
-`;
 export async function runCli(
   args: string[],
   env: NodeJS.ProcessEnv = process.env,
@@ -52,7 +37,7 @@ export async function runCli(
       },
     });
     if (v.help || (!p.length && !v.version)) {
-      process.stdout.write(HELP);
+      process.stdout.write(helpText(p));
       return 0;
     }
     if (v.version) {
@@ -87,7 +72,7 @@ export async function runCli(
     if (selected === 'auth login') {
       const notify = (event: Record<string, unknown>) => {
         if (v.json) process.stdout.write(JSON.stringify(event) + '\n');
-        else process.stderr.write(JSON.stringify(event, null, 2) + '\n');
+        else process.stderr.write(loginProgress(event) + '\n');
       };
       output = await interactiveLogin(
         client.auth,
