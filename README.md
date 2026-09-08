@@ -13,12 +13,37 @@ npm install -g ccdb-cli@latest
 ccdb-cli --version
 ccdb-cli auth login --method device
 ccdb-cli factor search "电力" --country "中国" --limit 5 --json
-ccdb-cli factor detail "2232515359983616" --json
 ccdb-cli doctor --json
 ccdb-cli --help
 ```
 
 安装或升级均使用上述命令，获取 npm latest。若国内镜像尚未同步，可追加 `--registry=https://registry.npmjs.org/`。安装成功不等于取得数据库权限，查询仍需服务端可用并完成授权。
+
+详情查询需使用搜索响应中的真实字符串 factorId，不要复制固定示例 ID。先替换占位符再执行：
+
+```sh
+ccdb-cli factor detail "<搜索返回的factorId>" --json
+```
+
+### 测试环境
+
+以下命令均使用同一个 test profile；不要测试环境登录后再省略 profile 去查询生产环境：
+
+```sh
+ccdb-cli auth login --profile test
+ccdb-cli auth status --profile test --json
+ccdb-cli factor search "电力" --profile test --limit 5 --json
+```
+
+取得搜索结果后，用返回的字符串 ID 替换下方占位符，再单独执行：
+
+```sh
+ccdb-cli factor detail "<搜索返回的factorId>" --profile test --json
+```
+
+### 如何确认接入成功
+
+`--version` 成功仅表示程序可执行；`auth status` 仅表示本地凭证状态；`doctor` 只检查发现端点。用户需要查询时，一次小范围搜索返回正常业务响应才表示查询链路可用；详情使用真实搜索 ID 验证。空结果不一定是接入失败，受限值也不代表认证失败。不要为了安装验收额外批量查询或消耗配额。
 
 ### 认证选择：默认 device OAuth，API Key 为备选
 
@@ -32,7 +57,7 @@ API Key 是用户主动选择的备选：由宿主 Secret 设置 `CCDB_API_KEY`�
 
 Windows 自动凭证存储使用 DPAPI；macOS/Linux 依赖本机 Keychain/Secret Service。系统凭证存储不可用时，可显式选择 `CCDB_AUTH_STORE=file` 使用加密文件，并记住该身份的存储选择。主密钥也保存在本机，保护强度不等同于系统密钥服务，需限制本机文件访问权限。
 
-`auth logout --revoke` 撤销整条应用授权，可能影响共享凭证的其他工具。默认 logout 只清理本地，不停用 API Key，也不移除环境变量。
+`ccdb-cli auth logout --revoke` 撤销整条应用授权，可能影响共享凭证的其他工具。默认 logout 只清理本地，不停用 API Key，也不移除环境变量。
 
 数值受限 `******` 不可计算。候选不是最终推荐，须结合详情、单位、范围判断。
 
