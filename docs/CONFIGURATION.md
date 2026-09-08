@@ -14,16 +14,16 @@
 | `CCDB_REDIRECT_URI`             | PKCE 精确回调，默认 http://127.0.0.1:3210/callback                                  |
 | `CCDB_API_KEY`                  | 可选完整 Key，优先于保存的 OAuth/Key                                                |
 | `CCDB_CONFIG_DIR`               | 独立认证目录；profile/issuer/client/resource 共同隔离凭证                           |
-| `CCDB_AUTH_STORE`               | 默认系统存储；file 显式启用 AES-GCM 加密文件后备，并记住该身份的选择 |
+| `CCDB_AUTH_STORE`               | 系统存储优先；新身份在服务不可用时自动使用加密文件并提示，file 可显式选择 |
 | `CCDB_TIMEOUT_MS` / `--timeout` | 单请求超时，默认 30000，范围 100–120000 毫秒                                        |
 
 local 默认网关 `http://127.0.0.1:8880`、前端 `http://127.0.0.1:3100`。实际端口不同时须同步配置，不要把 localhost 与 127.0.0.1 混为精确匹配相同值。
 
 test 默认网关为 https://gateway-base-test.carbonstop.com，前端为 https://agenttest.carbonstop.com；不再要求额外设置 CCDB_API_BASE。已有显式环境变量仍优先，client_id 仍必须在目标环境登记。
 
-包含 ccdb-client 0.1.1 的新版本中，显式 CCDB_AUTH_STORE=file 使用 AES-256-GCM 密文和 0600 本地主密钥文件；同身份后续查询、刷新无需重复设置变量。主密钥和密文都在本机，保护弱于系统钥匙串。旧 file 格式可读，下次写入升级；旧版程序不支持新密文格式，不要混用版本。非本机公开接口必须 HTTPS，不要提交认证目录。系统存储故障不会静默降级。登录会在授权前预检存储。
+首次登录的新身份在系统凭证服务不可用时自动使用 AES-256-GCM 文件后备，并显示提示、记住选择；不需要用户设置 CCDB_AUTH_STORE。已有系统凭证不可读、文件损坏、主密钥丢失或文件权限错误时不会自动覆盖。主密钥与密文均在本机，保护弱于系统密钥服务。
 
-上述行为需要先发布 SDK 0.1.1，再构建并发布本包；仅更新 GitHub 文档不会更新已安装程序。主密钥丢失/损坏会明确报错，不覆盖原凭证。完整边界见共享 SDK 的 docs/CREDENTIAL_STORAGE.md。
+默认目录为 ~/.config/carbonstop/ccdb/（遵循 XDG_CONFIG_HOME 或 LOCALAPPDATA）。默认配置下，旧 Carbonstop/CCDB-Connect 目录已有身份继续使用原文件和锁，新身份使用新目录；不搬迁或复制 Token。两处同时存在同一身份会报冲突。显式 CCDB_CONFIG_DIR 不搜索其他目录。旧版本无法读取新目录，不应并发创建相同新身份。
 
 刷新串行加锁并写入持久化进行标记。网络结果不明确或无法保存新 Refresh Token 时，拒绝重放旧 Refresh Token 并要求重新登录，避免触发服务端复用检测。业务 401 最多刷新并重试一次；403/429 不自动换凭证或重试刷额度。
 

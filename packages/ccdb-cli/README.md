@@ -55,8 +55,10 @@ API Key 是用户主动选择的备选：由宿主 Secret 设置 `CCDB_API_KEY`�
 
 默认环境为 `production`。环境与 OAuth 客户端配置见 [配置说明](https://github.com/carbonstop/ccdb-cli/blob/main/docs/CONFIGURATION.md)。
 
-Windows 自动凭证存储使用 DPAPI；macOS/Linux 依赖本机 Keychain/Secret Service。系统凭证存储不可用时，可显式选择 `CCDB_AUTH_STORE=file` 使用加密文件，并记住该身份的存储选择。主密钥也保存在本机，保护强度不等同于系统密钥服务，需限制本机文件访问权限。
+Windows 自动凭证存储使用 DPAPI；macOS/Linux 依赖本机 Keychain/Secret Service。首次登录的新身份遇到系统凭证服务不可用时，会自动使用加密文件、显示提示并记住选择，无需设置环境变量。已有凭证损坏或主密钥缺失时不会覆盖。主密钥也保存在本机，保护强度不等同于系统密钥服务，需限制本机文件访问权限。
 
 `ccdb-cli auth logout --revoke` 撤销整条应用授权，可能影响共享凭证的其他工具。默认 logout 只清理本地，不停用 API Key，也不移除环境变量。
 
 数值受限 `******` 不可计算。候选不是最终推荐，须结合详情、单位、范围判断。
+
+默认凭证目录为 `~/.config/carbonstop/ccdb/`（支持系统配置根目录覆盖）。旧目录已有的身份继续沿用原文件和锁，不复制 Token；新身份写入新目录。`CCDB_CONFIG_DIR` 可显式指定独立目录。

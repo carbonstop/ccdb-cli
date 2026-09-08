@@ -37,7 +37,7 @@ test('npm tgz packages install offline into fresh directories without shared wor
   assert.ok(process.env.npm_execpath, 'Run using npm test');
   for (const name of ['cli']) {
     const directory = await mkdtemp(join(tmpdir(), `ccdb-pack-${name}-`));
-    const archive = resolve(`dist/releases/ccdb-${name}-0.1.1.tgz`);
+    const archive = resolve(`dist/releases/ccdb-${name}-0.1.2.tgz`);
     const install = await run(
       process.execPath,
       [

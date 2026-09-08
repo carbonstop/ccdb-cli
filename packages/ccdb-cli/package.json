@@ -1,6 +1,6 @@
 {
   "name": "ccdb-cli",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "description": "CCDB Connect: authenticated emission factor search and details",
   "bin": {
