@@ -22,7 +22,7 @@
     "cli": "tsx packages/ccdb-cli/src/main.ts"
   },
   "dependencies": {
-    "ccdb-client": "0.1.0"
+    "ccdb-client": "0.1.1"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
