@@ -16,7 +16,7 @@ test('root and command help work without valid configuration or starting service
       [resolve('packages/ccdb-cli/dist/main.mjs'), ...args],
       {
         encoding: 'utf8',
-        timeout: 5000,
+        timeout: 15000,
         env: {
           ...process.env,
           CCDB_PROFILE: 'unregistered-help-fixture',

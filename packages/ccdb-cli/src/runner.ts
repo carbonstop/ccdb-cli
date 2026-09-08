@@ -42,7 +42,7 @@ export async function runCli(
     }
     if (v.version) {
       process.stdout.write(
-        v.json ? JSON.stringify({ name: 'ccdb-cli', version: '0.1.2' }) + '\n' : 'ccdb-cli 0.1.2\n',
+        v.json ? JSON.stringify({ name: 'ccdb-cli', version: '0.1.3' }) + '\n' : 'ccdb-cli 0.1.3\n',
       );
       return 0;
     }
