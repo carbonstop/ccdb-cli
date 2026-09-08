@@ -4,7 +4,7 @@ import { appConfig } from './config.js';
 import { interactiveLogin } from 'ccdb-client/auth/interactive';
 import { humanOutput } from './output.js';
 
-const HELP = `ccdb-cli 0.1.1 — CCDB 因子查询工具
+const HELP = `ccdb-cli 0.1.2 — CCDB 因子查询工具
 
 ccdb-cli auth login [--method device|pkce|api-key] [--no-browser]
 ccdb-cli auth status
@@ -57,7 +57,7 @@ export async function runCli(
     }
     if (v.version) {
       process.stdout.write(
-        v.json ? JSON.stringify({ name: 'ccdb-cli', version: '0.1.1' }) + '\n' : 'ccdb-cli 0.1.1\n',
+        v.json ? JSON.stringify({ name: 'ccdb-cli', version: '0.1.2' }) + '\n' : 'ccdb-cli 0.1.2\n',
       );
       return 0;
     }

@@ -1,6 +1,6 @@
 {
   "name": "ccdb-cli-development",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "type": "module",
   "workspaces": [
@@ -22,7 +22,7 @@
     "cli": "tsx packages/ccdb-cli/src/main.ts"
   },
   "dependencies": {
-    "ccdb-client": "0.1.1"
+    "ccdb-client": "0.1.2"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

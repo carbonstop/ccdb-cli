@@ -11,7 +11,7 @@
 ```sh
 npm ci
 npm run verify
-npm install -g ./dist/releases/ccdb-cli-0.1.1.tgz
+npm install -g ./dist/releases/ccdb-cli-0.1.2.tgz
 ```
 
 `verify` 会构建并生成本地 tgz；最后一行仅用于测试刚构建的本地版本。构建不会自动发布 npm。
