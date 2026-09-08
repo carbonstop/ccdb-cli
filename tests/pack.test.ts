@@ -66,6 +66,6 @@ test('npm tgz packages install offline into fresh directories without shared wor
     const installed = join(directory, `node_modules/ccdb-${name}/dist/main.mjs`);
     const result = await run(process.execPath, [installed, '--version'], directory);
     assert.equal(result.code, 0, result.err);
-    assert.match(result.out, /0\.1\.0/);
+    assert.equal(result.out.trim(), `ccdb-cli ${metadata.version}`);
   }
 });
