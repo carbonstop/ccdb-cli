@@ -1,9 +1,10 @@
 import { parseArgs } from 'node:util';
-import { CcdbClient, config, CcdbError, asError, exitCode, type Config } from 'ccdb-client';
+import { CcdbClient, CcdbError, asError, exitCode, type Config } from 'ccdb-client';
+import { appConfig } from './config.js';
 import { interactiveLogin } from 'ccdb-client/auth/interactive';
 import { humanOutput } from './output.js';
 
-const HELP = `ccdb-cli 0.1.0 — CCDB 因子查询工具
+const HELP = `ccdb-cli 0.1.1 — CCDB 因子查询工具
 
 ccdb-cli auth login [--method device|pkce|api-key] [--no-browser]
 ccdb-cli auth status
@@ -13,7 +14,7 @@ ccdb-cli factor search <query> [--language zh|en] [--accounting-type product|ent
 ccdb-cli factor detail <factorId> [--language zh|en]
 ccdb-cli doctor
 
-公共选项：--profile local|pre|production|自定义  --json  --timeout <毫秒>
+公共选项：--profile local|test|pre|production|自定义  --json  --timeout <毫秒>
 筛选项可重复传入；factorId 必须原样使用字符串。
 API Key 使用 CCDB_API_KEY 环境变量或 api-key 登录的隐藏输入/stdin，不接受明文命令行参数。
 auth logout --revoke 会撤销整条应用授权，可能影响共用该授权的 MCP/CLI/Skill。
@@ -56,14 +57,14 @@ export async function runCli(
     }
     if (v.version) {
       process.stdout.write(
-        v.json ? JSON.stringify({ name: 'ccdb-cli', version: '0.1.0' }) + '\n' : 'ccdb-cli 0.1.0\n',
+        v.json ? JSON.stringify({ name: 'ccdb-cli', version: '0.1.1' }) + '\n' : 'ccdb-cli 0.1.1\n',
       );
       return 0;
     }
     const overrides: Partial<Config> = {};
     if (v.profile) overrides.profile = v.profile;
     if (v.timeout) overrides.timeoutMs = Number(v.timeout);
-    const settings = config(env, overrides);
+    const settings = appConfig(env, overrides);
     const client = new CcdbClient(settings);
     let output: unknown;
     const command = p.slice(0, 2).join(' ');

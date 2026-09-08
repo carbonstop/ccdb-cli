@@ -18,7 +18,7 @@ ccdb-cli doctor --json
 ccdb-cli --help
 ```
 
-需要固定版本时使用 `npm install -g ccdb-cli@0.1.0`。若国内镜像尚未同步，可追加 `--registry=https://registry.npmjs.org/`。安装成功不等于取得数据库权限，查询仍需服务端可用并完成授权。
+需要固定版本时使用 `npm install -g ccdb-cli@0.1.1`。若国内镜像尚未同步，可追加 `--registry=https://registry.npmjs.org/`。安装成功不等于取得数据库权限，查询仍需服务端可用并完成授权。
 
 ### 认证选择：默认 device OAuth，API Key 为备选
 
