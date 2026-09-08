@@ -9,7 +9,8 @@
 | `CCDB_OAUTH_ISSUER`             | 授权服务器标识，默认网关加 `/auth`                                                  |
 | `CCDB_RESOURCE`                 | 默认 REST 资源 URI；客户端 REST 调用必须获得该资源 Token                            |
 | `CCDB_AGENT_WEB`                | Carbon Agent 前端根地址                                                             |
-| `CCDB_CLIENT_ID`                | 已登记 OAuth 应用标识，默认 ccdb-connect-local                                      |
+| `CCDB_CLIENT_ID`                | 可显式覆盖；默认按应用和环境映射，见下表 |
+
 | `CCDB_REDIRECT_URI`             | PKCE 精确回调，默认 http://127.0.0.1:3210/callback                                  |
 | `CCDB_API_KEY`                  | 可选完整 Key，优先于保存的 OAuth/Key                                                |
 | `CCDB_CONFIG_DIR`               | 独立认证目录；profile/issuer/client/resource 共同隔离凭证                           |
@@ -25,6 +26,21 @@ test 默认网关为 https://gateway-base-test.carbonstop.com，前端为 https:
 上述行为需要先发布 SDK 0.1.1，再构建并发布本包；仅更新 GitHub 文档不会更新已安装程序。主密钥丢失/损坏会明确报错，不覆盖原凭证。完整边界见共享 SDK 的 docs/CREDENTIAL_STORAGE.md。
 
 刷新串行加锁并写入持久化进行标记。网络结果不明确或无法保存新 Refresh Token 时，拒绝重放旧 Refresh Token 并要求重新登录，避免触发服务端复用检测。业务 401 最多刷新并重试一次；403/429 不自动换凭证或重试刷额度。
+
+## OAuth 客户端默认映射
+
+| profile | 本应用默认 client_id |
+| --- | --- |
+| local | ccdb-cli-local |
+| test | ccdb-cli-test |
+| pre | ccdb-cli-pre |
+| production（默认） | ccdb-cli-prod |
+
+上述 ID 是待后端登记的应用标识，不代表已注册或已启用。CLI 和本地 stdio MCP 各自使用自己的 ID；同应用同环境用户共用 ID，各自持有 Token。profile 不会自动注册客户端，环境隔离还依赖 issuer/resource 和后端配置。自定义 profile 须显式配置 CCDB_CLIENT_ID 和环境地址。
+
+显式 CCDB_CLIENT_ID 优先于表中默认值。后端尚未登记新 ID 时，可继续设置 CCDB_CLIENT_ID=ccdb-connect-local（前提是旧 ID 已启用）。默认 ID 改变后需重新登录，不迁移或复用旧 ID 的 Token；登录与实际调用必须保持相同 profile、client_id 和配置目录。
+
+设备码登录无需回调白名单，但后端必须开启 device grant、所需 scopes 及 REST resource；PKCE 需精确登记回调。远程 HTTP 的 OAuth 客户端是 WorkBuddy 等宿主，不使用此表的本地登录 ID，Gateway-first 的认证配置不变。
 
 ## 错误和退出码
 
