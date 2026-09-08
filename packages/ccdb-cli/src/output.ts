@@ -1,3 +1,28 @@
+/** Human login progress only; --json retains the original event objects. */
+export function loginProgress(event: Record<string, unknown>): string {
+  const text = (value: unknown) =>
+    typeof value === 'string' ? value.replace(/[\x00-\x1f\x7f-\x9f]/g, '') : '';
+  if (event.event === 'credential_storage') return '凭证存储\n  ' + text(event.message);
+  if (event.event === 'authorization_pending') {
+    const url = text(event.verificationUri || event.authorizationUri);
+    const code = text(event.userCode);
+    const expires =
+      typeof event.expiresIn === 'number' && event.expiresIn > 0
+        ? '\n  有效期：' + Math.ceil(event.expiresIn / 60) + ' 分钟'
+        : '';
+    return (
+      '等待浏览器授权\n' +
+      (code ? '  设备码：' + code + '\n' : '') +
+      '  授权链接：' +
+      url +
+      expires +
+      '\n\n  请在浏览器完成授权，终端会继续等待。'
+    );
+  }
+  if (event.event === 'browser_unavailable') return '浏览器未能自动打开，请手动访问上方授权链接。';
+  return '登录提示：' + (text(event.message) || '正在处理，请稍候。');
+}
+
 /** Localized fields remain untouched in JSON; only the terminal view selects a label. */
 export function label(value: unknown, language = 'zh'): string {
   if (value === null || value === undefined) return '—';
