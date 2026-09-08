@@ -9,7 +9,7 @@
 从 [npm](https://www.npmjs.com/package/ccdb-cli) 安装：
 
 ```sh
-npm install -g ccdb-cli
+npm install -g ccdb-cli@latest
 ccdb-cli --version
 ccdb-cli auth login --method device
 ccdb-cli factor search "电力" --country "中国" --limit 5 --json
@@ -18,7 +18,7 @@ ccdb-cli doctor --json
 ccdb-cli --help
 ```
 
-需要固定版本时使用 `npm install -g ccdb-cli@0.1.1`。若国内镜像尚未同步，可追加 `--registry=https://registry.npmjs.org/`。安装成功不等于取得数据库权限，查询仍需服务端可用并完成授权。
+安装或升级均使用上述命令，获取 npm latest。若国内镜像尚未同步，可追加 `--registry=https://registry.npmjs.org/`。安装成功不等于取得数据库权限，查询仍需服务端可用并完成授权。
 
 ### 认证选择：默认 device OAuth，API Key 为备选
 
@@ -30,7 +30,7 @@ API Key 是用户主动选择的备选：由宿主 Secret 设置 `CCDB_API_KEY`�
 
 默认环境为 `production`。环境与 OAuth 客户端配置见 [配置说明](docs/CONFIGURATION.md)。
 
-Windows 自动凭证存储使用 DPAPI；macOS/Linux 依赖本机 Keychain/Secret Service。无系统密钥服务时可显式选择 CCDB_AUTH_STORE=file（非加密文件），需自行限制本机访问。
+Windows 自动凭证存储使用 DPAPI；macOS/Linux 依赖本机 Keychain/Secret Service。系统凭证存储不可用时，可显式选择 `CCDB_AUTH_STORE=file` 使用加密文件，并记住该身份的存储选择。主密钥也保存在本机，保护强度不等同于系统密钥服务，需限制本机文件访问权限。
 
 `auth logout --revoke` 撤销整条应用授权，可能影响共享凭证的其他工具。默认 logout 只清理本地，不停用 API Key，也不移除环境变量。
 
