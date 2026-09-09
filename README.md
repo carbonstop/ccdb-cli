@@ -1,33 +1,66 @@
 # CCDB CLI
 
-命令：`ccdb-cli`；npm 包：`ccdb-cli`。另提供无需 Node.js 的独立二进制，构建、下载与发布见 [分发说明](docs/DISTRIBUTION.md)。
+在终端或 AI Agent 中查询 Carbonstop 碳阻迹 CCDB 排放因子，按地区、年份等条件搜索候选，并查看因子详情、单位、系统边界与来源。
 
-独立的 CCDB 因子查询命令行。npm 版需要 Node.js 22+；独立二进制无需 Node.js。内含接口与认证代码，不需要安装 MCP 或 ccdb-client。
+查询结果包含接口返回的因子详情链接，可在 [Carbon Agent](https://agent.carbonstop.com) 查看对应数据与适用信息。可见范围取决于账号权限和数据许可，登录不代表所有数值均可解锁。
 
-## 从 npm 安装（推荐）
+## 快速开始
 
-从 [npm](https://www.npmjs.com/package/ccdb-cli) 安装：
+### 1. 安装
+
+**使用 npm（需要 Node.js 22+）：**
 
 ```sh
 npm install -g ccdb-cli@latest
 ccdb-cli --version
-ccdb-cli auth login --method device
-ccdb-cli factor search "电力" --country "中国" --limit 5 --json
-ccdb-cli doctor --json
-ccdb-cli --help
 ```
 
-安装或升级均使用上述命令，获取 npm latest。若国内镜像尚未同步，可追加 `--registry=https://registry.npmjs.org/`。安装成功不等于取得数据库权限，查询仍需服务端可用并完成授权。
+**不安装 Node.js：** 从 [最新 Release](https://github.com/carbonstop/ccdb-cli/releases/latest) 下载对应系统和架构的独立二进制，核对 `SHA256SUMS.txt` 后解压。macOS/Linux 使用 `ccdb-cli`，Windows 使用 `ccdb-cli.exe`；将可执行文件所在目录加入 PATH 后再运行 `ccdb-cli --version`。macOS/Linux 如缺少执行权限，可在解压目录执行 `chmod +x ccdb-cli`。
 
-详情查询需使用搜索响应中的真实字符串 factorId，不要复制固定示例 ID。先替换占位符再执行：
+独立二进制覆盖 macOS arm64/x64、Linux glibc arm64/x64 和 Windows x64。下载包可能触发系统信任提示，请核对来源并按系统提示处理，不要全局关闭安全保护。
+
+### 2. 登录授权
+
+首次使用时执行：
+
+```sh
+ccdb-cli auth login
+```
+
+默认使用 device OAuth。按终端提示在浏览器完成登录与授权；已有有效凭证时无需重复登录。无浏览器终端可加 `--no-browser`，在另一设备打开显示的链接。查询命令不会自动启动登录。
+
+### 3. 搜索与查看详情
+
+下面的示例搜索中国电力因子；请按实际场景调整关键词和条件：
+
+```sh
+ccdb-cli factor search "电力" --country "中国" --limit 5 --json
+```
+
+需要详情时，将占位符替换为搜索返回的真实字符串 `factorId`，再单独执行：
 
 ```sh
 ccdb-cli factor detail "<搜索返回的factorId>" --json
 ```
 
-### 测试环境
+`factorId` 不要转为数字。JSON 中的 `detailUrl` 是对应因子的查看入口；链接缺失时不要自行拼接。推荐或选用因子前，应核对单位、地区、年份、系统边界和来源。受限值 `******` 与缺失值不是 0，不能用于计算；候选结果也不等于最终推荐。
 
-以下命令均使用同一个 test profile；不要测试环境登录后再省略 profile 去查询生产环境：
+## 常用命令
+
+| 命令 | 用途 |
+| --- | --- |
+| `ccdb-cli --help` | 查看命令和参数 |
+| `ccdb-cli auth status --json` | 检查本地凭证状态 |
+| `ccdb-cli doctor --json` | 检查配置和发现端点，不查询因子 |
+| `ccdb-cli factor search "<关键词>" --limit 5 --json` | 搜索因子 |
+| `ccdb-cli factor detail "<factorId>" --json` | 查询详情，ID 来自搜索结果 |
+| `ccdb-cli auth logout` | 清理当前身份的本地凭证 |
+
+`--json` 便于脚本和 Agent 读取。更多筛选条件与数据使用规则见 [因子查询指南](https://github.com/carbonstop/ccdb-cli/blob/main/docs/FACTOR_GUIDANCE.md)。
+
+## 认证与环境
+
+默认连接 `production`。只有使用测试环境时，才为登录、状态检查和查询统一指定 `--profile test`：
 
 ```sh
 ccdb-cli auth login --profile test
@@ -35,41 +68,34 @@ ccdb-cli auth status --profile test --json
 ccdb-cli factor search "电力" --profile test --limit 5 --json
 ```
 
-取得搜索结果后，用返回的字符串 ID 替换下方占位符，再单独执行：
+详情查询也必须使用同一个 profile。显式环境变量仍可覆盖预设地址和客户端 ID，详见 [配置说明](https://github.com/carbonstop/ccdb-cli/blob/main/docs/CONFIGURATION.md)。不要因连接失败自动切换环境。
+
+API Key 是主动选择的备选：使用 `ccdb-cli auth login --method api-key` 的不回显输入，或在实际执行环境中安全配置 `CCDB_API_KEY`。不要在聊天、命令参数、仓库或日志中提供完整 Key。
+
+显式 `CCDB_API_KEY` 优先于已保存凭证；OAuth 失败不自动切换 Key，Key 失败也不自动切换 OAuth。恢复 OAuth 时需移除实际执行环境中的 Key 配置。PKCE 可通过 `--method pkce` 显式选择。
+
+默认 logout 不会停用服务端 API Key 或删除环境变量。`ccdb-cli auth logout --revoke` 会撤销整条应用授权，可能影响共用该授权的其他工具，确认影响后再执行。
+
+## 常见问题
+
+- **安装成功但查询失败：** `--version` 仅证明程序可执行；`auth status` 仅检查本地凭证；`doctor` 检查发现端点。业务权限需通过实际查询确认。按用户需要做一次小范围查询即可，不为安装验收批量消耗配额。
+- **返回空结果或受限值：** 不一定是认证失败，可能与检索条件、数据覆盖或权限有关。不要通过旧接口反查受限值。
+- **`invalid_client`：** 请管理员核对目标环境的客户端登记与启用状态，以及是否有环境变量覆盖配置；profile 不会自动注册客户端。
+- **凭证存储后备提示：** 新身份在系统凭证服务不可用时会自动使用本地加密文件并记住选择，提示本身不代表登录失败。主密钥也在本机，保护弱于系统钥匙串；已有凭证损坏或主密钥丢失时不会自动覆盖。不要删除凭证文件来强制重置，存储路径与兼容规则见 [配置说明](https://github.com/carbonstop/ccdb-cli/blob/main/docs/CONFIGURATION.md)。
+- **401 / 403 / 429：** 分别检查登录、访问权限和限流提示，不切换身份或旧接口绕过限制。排错可提供错误码和 requestId，不提供 Key 或 Token。
+- **更新后仍显示旧版本：** 检查 PATH 是否选中了另一份安装。npm 用户使用下面的更新命令；二进制用户从官方 Release 下载并替换所用版本。
+
+## 更新与更多文档
+
+npm 安装可执行以下命令更新：
 
 ```sh
-ccdb-cli factor detail "<搜索返回的factorId>" --profile test --json
+npm install -g ccdb-cli@latest
 ```
 
-### 如何确认接入成功
+镜像未同步时追加 `--registry=https://registry.npmjs.org/`。跨越不兼容版本前阅读 [迁移说明](https://github.com/carbonstop/ccdb-cli/blob/main/docs/MIGRATION.md)。
 
-`--version` 成功仅表示程序可执行；`auth status` 仅表示本地凭证状态；`doctor` 只检查发现端点。用户需要查询时，一次小范围搜索返回正常业务响应才表示查询链路可用；详情使用真实搜索 ID 验证。空结果不一定是接入失败，受限值也不代表认证失败。不要为了安装验收额外批量查询或消耗配额。
-
-### 认证选择：默认 device OAuth，API Key 为备选
-
-`ccdb-cli auth login` 默认使用 device OAuth，等价于 `ccdb-cli auth login --method device`。终端给出授权链接和设备码，由用户在浏览器登录并授权；无浏览器终端可加 `--no-browser`。查询本身不会自动启动登录。
-
-API Key 是用户主动选择的备选：由宿主 Secret 设置 `CCDB_API_KEY`，或使用 `ccdb-cli auth login --method api-key` 不回显输入。不要在命令参数、聊天或日志中粘贴完整 Key。
-
-默认推荐顺序不改变显式配置：环境 `CCDB_API_KEY` 存在时仍优先于已保存凭证；恢复 OAuth 前应从实际执行环境中移除该变量并登录。没有环境 Key 时使用已保存凭证。OAuth 无法刷新时提示重新登录，不自动切换 Key；Key 失败也不自动切换 OAuth。PKCE 是通过 `--method pkce` 显式选择的另一种 OAuth 登录方式。
-
-默认环境为 `production`。环境与 OAuth 客户端配置见 [配置说明](docs/CONFIGURATION.md)。
-
-Windows 自动凭证存储使用 DPAPI；macOS/Linux 依赖本机 Keychain/Secret Service。首次登录的新身份遇到系统凭证服务不可用时，会自动使用加密文件、显示提示并记住选择，无需设置环境变量。已有凭证损坏或主密钥缺失时不会覆盖。主密钥也保存在本机，保护强度不等同于系统密钥服务，需限制本机文件访问权限。
-
-`ccdb-cli auth logout --revoke` 撤销整条应用授权，可能影响共享凭证的其他工具。默认 logout 只清理本地，不停用 API Key，也不移除环境变量。
-
-数值受限 `******` 不可计算。候选不是最终推荐，须结合详情、单位、范围判断。
-
-See [configuration](docs/CONFIGURATION.md), [migration](docs/MIGRATION.md), and [factor guidance](docs/FACTOR_GUIDANCE.md).
-
-## 开发
-
-```sh
-npm ci
-npm run verify
-```
-
-源码包安装和本地调试见 [开发指南](docs/DEVELOPMENT.md)。
-
-默认凭证目录为 `~/.config/carbonstop/ccdb/`（支持系统配置根目录覆盖）。旧目录已有的身份继续沿用原文件和锁，不复制 Token；新身份写入新目录。`CCDB_CONFIG_DIR` 可显式指定独立目录。
+- [Carbon Agent：查看因子详情](https://agent.carbonstop.com)
+- [环境与认证配置](https://github.com/carbonstop/ccdb-cli/blob/main/docs/CONFIGURATION.md)
+- [因子查询指南](https://github.com/carbonstop/ccdb-cli/blob/main/docs/FACTOR_GUIDANCE.md)
+- 维护者：[开发指南](https://github.com/carbonstop/ccdb-cli/blob/main/docs/DEVELOPMENT.md) · [构建与发布](https://github.com/carbonstop/ccdb-cli/blob/main/docs/DISTRIBUTION.md)
