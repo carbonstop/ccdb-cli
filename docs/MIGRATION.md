@@ -6,7 +6,7 @@ This is a source snapshot, not a history rewrite. The original repository is unc
 ## Ownership
 
 - This repository owns `ccdb-cli`, executable `ccdb-cli`.
-- `carbonstop/ccdb-mcp` independently owns `ccdb-mcp-server`.
+- `carbonstop/ccdb-mcp` independently owns `ccdb-mcp` (formerly `ccdb-mcp-server`); the executable remains `ccdb-mcp`.
 - `carbonstop/skills` contains instructions only and consumes the CLI command contract or MCP tools.
 - Shared authentication, API contracts, HTTP and credential storage are maintained in `carbonstop/ccdb-client` and consumed from the public npm package [`ccdb-client`](https://www.npmjs.com/package/ccdb-client). The root build dependency is pinned to `0.1.1`; there is no copied client workspace to synchronize. Private GitHub source access is not required to install or build this repository.
 - Fix shared logic in the client repository and publish a client version first. Then update the dependency and lockfile in CLI and MCP with linked upgrade PRs, and run both complete verification suites. Keep the consumer auth, callback, contract and error-redaction regression tests against the published package. CLI/MCP releases are still independent: publishing client alone does not update already installed consumers.
